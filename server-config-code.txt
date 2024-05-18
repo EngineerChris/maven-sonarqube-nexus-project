@@ -19,6 +19,7 @@ MAVEN SERVER CONFIGURATION
 
 ----------------------------
 switch to the source code root/folder
+
 - cd JavaWebApp      This is where I will be for the entire process
 ----------------------------
 
@@ -58,7 +59,7 @@ Building Process
   -----
   Checking the report on SQ
   - Go to SQ Server (Web) --> JavaWebApp project OVERVIEW
-  - 
+  
 ----------------------------  
 NEXUS
 
