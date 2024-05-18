@@ -1,7 +1,8 @@
 
 SERVER CONFIGURATION IN EXECUTING THE BUILD, TESTING AND PUSH USING MAVEN, SONARQUBE AND NEXUS 
 
-- This section contains all the codes I run and steps I take  while configuring the Servers 
+- This section contains all the codes I run and steps I take while configuring the Servers and executing the build, test and upload. 
+- Pre-requisite: Launch the servers with all the userdata https://github.com/EngineerChris/maven-sonarqube-nexus-project 
 
 ----------------------------
 MAVEN SERVER CONFIGURATION
@@ -111,12 +112,81 @@ Go to Nexus Server (ec2) copy the PrivateIP and PORT (8081)
 - Provide in both urls lines of the POM.XML file
 
 ---
-PUSH CHANGES TO Git (consider using Feature Branches)
+PUSH CHANGES TO Git (consider using Feature Branches) - Or wait till settings.xml is updated as well.
 - git add .
 - git commit -m "Updating POM.XML"
 - git push 
 
 UPDATES THE CHANGES AT THE MAVEN SERVER level
+- Pull teh chnages att the Nexus Ec2 server, and the CodeBase Repo i.e JavaWebApp
+- < git pull origin main>
 
-git pull origin main (to pull teh chnages)
 ---------------------------- 
+SETTINGS.XML - FOR AUTHORIZATION PROVISIONING CONFIG FOR MAVEN ACCESS TO NEXUS
+
+*** SETTINGS.XML  ***
+- Is an authorization/access file for providing authorization for MAVEN to access other systems/applications e.g  NEXUS 
+- Reminder POM.XML vs SETTINGS.XML, while POM.XML is teh brain / configuration file for MAVEN, that tells what MAVEN will do, 
+  - SETTINGS.XML, handles the authorization confi provisioning for MAVEN in accessing other ssystems/applications 
+
+***Configuring Settings.XML***
+
+- Provide Username and Password
+  - Find the nexus deployment repo id section (line 32 and 33)
+  - Update the NEXUS Username and password --> admin / admin
+
+- Provide Nexus arfiactory Private IP:Port, Repository Name (line 63 and 64) (Leave line 86)
+  - NexusPrivateIp:8081
+  - Nexus-Repo-Name - maven-snapshots
+
+- Push changes
+  - git add .
+  - git commit -m "Updating POM.XML"
+  - git push -u Feature
+
+- Create Pull Request to Merge with main
+
+- Update on the server (Maven ec2)
+  - git pull origin main OR just git pull
+
+
+
+------------------
+PUT SETTINGS.XML IN THE .M2  (DEFAULT LOCATION)
+
+Maven, by default, searches for the configuration file settings.xml in the .m2 directory located in the home directory of the current user executing Maven.
+Maven does not search it in the home directory of the project 
+
+- ls
+- cd ..  (to swicth to Maven-SonarQube-Nexus Repo)
+- ls
+- cp settings.xml ~/.m2  --> To copy the settings.xml to the .m2 which contains the Maven Local Repoeitory called "repository"  
+  - .M2 is located in the home directory of the current user that is executing maven. 
+- ls ~/.m2  (to cofirm that the settings.xml is in the .m2 folder). In the .m2, You should now find "repository" and "settings.xml"
+  - Where is repository located in maven server. 
+    - The local repository in Maven is located in the .m2 directory within the home directory of the user executing Maven. The default path for the local repository is .m2/repository
+
+Local repository
+- The local repository is a directory on the user's local machine where Maven stores all the project artifacts (e.g., dependencies, plugins) that it downloads. 
+- By default, this is located in the .m2/repository directory.
+
+Default .m2 and repository Location:
+- The .m2 directory is typically found in the user's home directory:
+  - Linux/Mac: /home/username/.m2/repository
+  - Windows: C:\Users\username\.m2\repository
+
+Repository Configuration:
+- The location of the local repository can be configured in the settings.xml file, which is also found in the .m2 directory. 
+- If not configured, Maven uses the default location.
+
+------------------
+
+GO BACK TO APP CODE BASE - JavaWebApp
+- cd JavaWebApp
+
+---
+DEPLOY ARTIFACTS TO NEXUS 
+- mvn deploy
+
+VIEW UPLOADED ARTIFACTS 
+- Go to nexus web server --> the box  (not gear) --> browse --> maven-snapshots
