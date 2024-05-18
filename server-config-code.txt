@@ -1,0 +1,122 @@
+
+SERVER CONFIGURATION IN EXECUTING THE BUILD, TESTING AND PUSH USING MAVEN, SONARQUBE AND NEXUS 
+
+- This section contains all the codes I run and steps I take  while configuring the Servers 
+
+----------------------------
+MAVEN SERVER CONFIGURATION
+
+- ssh into maven server
+- git clone < project repo --> https://github.com/EngineerChris/maven-sonarqube-nexus-project.git > 
+- ls
+- cd < repo -->  maven-sonarqube-nexus-project >
+- ls
+- mnv -v   (we will see mvn is using kava-17)
+- sudo /usr/sbin/alternatives --config java      --> # to switch to java 11 inorder not to run into issues as per the proj req and dependencies
+- 4
+- mvn -v  (confirm mavn is switched to java 11.0...)
+
+----------------------------
+switch to the source code root/folder
+- cd JavaWebApp      This is where I will be for the entire process
+----------------------------
+
+Building Process
+- mvn validate
+- mvn compile ( you can skip to test )
+- mvn test  (unit testing on teh source code using Junit Framework) (run ls --> ls target)
+  ls 
+  ls target  (all the downloaded packages are found here)
+    classes :  
+    generated-sources : 
+    generated-test-sources :
+    maven-status :
+    surefire-reports : Stores all the reports based on the Junit test )
+    test-classes : 
+- mvn package
+  ls target
+    artifact will show (JavaWebApp-1.0-SNAPSHOT.jar)
+
+----------------------------
+
+  CONFIGURING  SONARQUBE 
+
+  - Go to sonarQube web --> SOnarqubePubIP:9000 --> login (default - admin/admin) --> 
+  - Create Project --> < project name: java-web-app-project>
+  - TOKEN NAME - Paste Project name [java-web-app-project] as TOKEN name. The TOKEN is how we give maven authorization to SONARQUBE so that SQ API and inteeract with Maven.
+     SonarScanner - is the component what the SonarQube uses for the test.
+       - Types of Scanners on SQ - Maven Scanner, Gradle Scanner, Ant Scanner, MS Build Scanner. Depending on the Buid tool.
+  - Generate --> COPY the TOKEN AND SAVE somewhere --> Continue  
+  - Choose JAVA (The application code is based on Java) and choose MAVEN the build tool
+  - COPY THE SCANNER API CODE --> Execute Scanner for Maven from your Scanner (mvn sonar:sonar)
+     - DEPENDENCY that should be downloaded before the above code can run (i.e before the scanner can run). 
+       This has been defined in the POM.XML (Line 19) --> <sonar.scanner.force-depecated... If this line of code is removed the code above cannot run.
+  - RUN the COMMAND on Maven Instance [ Ensure you are in the JavaWebApp Directory i.e your project source code root.
+  - The SonarQube test will run shows if succeeded
+
+  -----
+  Checking the report on SQ
+  - Go to SQ Server (Web) --> JavaWebApp project OVERVIEW
+  - 
+----------------------------  
+NEXUS
+
+- Go to nexus server (web) --> nexus-pubip:8081
+- sign in : Provide the password in admin.password file in the /opt/nexus/sonatype-work/nexus3/admin.password
+   - COPY /opt/nexus/sonatype-work/nexus3/admin.password
+   - Go to Nexus Server ec2
+   - sudo cat /opt/nexus/sonatype-work/nexus3/admin.password
+   - Copy the password displayed.
+   - Username - admin
+   - Sign in
+   - New username/password : admin/admin
+   - Disable Anonymous access so the artifact are not visible to the public
+   - finish --> next-nets ill finish 
+
+Understand Nexus COmponents
+- Go to Gear (where admin and security confi takes place 
+- Got to  Repository : We will see all repos created automatically by default by Nexus during Set up.
+  - we will use the "maven-snapshots" Repository - Because it is used for artifacts storage
+  - we can also use "maven-relaeases" repository it is also available for artifcats storage.
+
+---------------------------- 
+EDIT POM.XML TO DEFINE THE URL PATH OF NEXUS REPO
+
+- Provide ARTIFACTORY PRIVATE IP:PORT, SNAPSHOT_REPO_NAME
+This should be down on Local then push to git (Bad Practice to execute this on Github)
+This can also be done at the level of the server ***
+Question: When updates github repo, thus the same clonned repo in the server also get updated or not
+
+
+---
+FIND THE ARES TO EDIT IN POM.XML
+- Go to VScode repo 
+  - Click on "JavaWebApp"  --> "POM.XML file" 
+  - Go to where Nexus path is defined (line 64 and 68 )
+    - <url>http: //ARTIFACTORY_IP_ADDRESS:PORT_NUMBER.......
+
+---
+PROVIDE REPOSITORY NAME (that is "maven-snapshots")
+- Go to Nexus Web server --> Gear --> Repo --> Repo --> copy "maven-snapshots" repo
+- Go to POM.XML and put the Name in both urls sstated (line 64 and 68)
+- This means we are tetlling Maven to public artifacts to the that specific nexus repo
+
+---
+PROVIDE NEXUS PORT ARTIFACTORY IP AND PORT
+Go to Nexus Server (ec2) copy the PrivateIP and PORT (8081)
+- NexusPRIVATE-ID:8081
+  - PRIVATE because the severs (ec2 instances for Maven, Nexus ) exist in the same networking VPC
+  - If you private PRIVATE IP, while the servers exist in different network then you woul need connection like (vpc peering, vpc endpoint etc) to make the connection communication work.
+  - Public can work too but remember public ip changes when you stop the servers and come back.
+- Provide in both urls lines of the POM.XML file
+
+---
+PUSH CHANGES TO Git (consider using Feature Branches)
+- git add .
+- git commit -m "Updating POM.XML"
+- git push 
+
+UPDATES THE CHANGES AT THE MAVEN SERVER level
+
+git pull origin main (to pull teh chnages)
+---------------------------- 
