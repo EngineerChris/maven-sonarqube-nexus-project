@@ -80,6 +80,16 @@ Understand Nexus COmponents
 - Got to  Repository : We will see all repos created automatically by default by Nexus during Set up.
   - we will use the "maven-snapshots" Repository - Because it is used for artifacts storage
   - we can also use "maven-relaeases" repository it is also available for artifcats storage.
+-------------------------------
+TWO TYPES OF REPOSITORIES IN NEXUS
+
+1. Maven Snapshots Repository: This repository is typically used as a staging area where developers can deploy snapshot versions of their artifacts. Snapshot versions are intended for development and testing purposes and are often updated frequently as the project progresses.
+2. Maven Release Repository: This repository, sometimes referred to as the Maven Release Repository or Maven Release Artifactory, is used for hosting stable, production-ready artifacts. Unlike snapshot versions, release versions are intended for deployment in production environments and are expected to be stable and reliable.
+
+The type of repository to which artifacts are deployed is typically defined in the pom.xml file of a Maven project.
+In the distributionManagement section of the pom.xml, you can specify the repository where Maven should deploy the artifacts. This includes specifying the repository URL, the repository ID, and the repository type.
+In summary, the Maven Snapshots Repository is used for staging and testing while the Maven Release Repository is used for production deployments of stable artifacts.
+
 
 ---------------------------- 
 EDIT POM.XML TO DEFINE THE URL PATH OF NEXUS REPO
